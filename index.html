@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Recommendation Website</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <h1>🎬 Movie Recommendation Website</h1>
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search movies...">
+            <button id="searchBtn">Search</button>
+        </div>
+    </header>
+
+    <section>
+        <h2>Movies</h2>
+        <div id="moviesContainer" class="movie-grid"></div>
+    </section>
+
+    <section>
+        <h2>❤️ Favorites</h2>
+        <div id="favoritesContainer" class="movie-grid"></div>
+    </section>
+
+    <script src="script.js"></script>
+    <div id="movieModal" class="modal">
+    <div class="modal-content">
+        <span id="closeModal">&times;</span>
+        <div id="modalBody"></div>
+    </div>
+</div>
+</body>
+</html>
