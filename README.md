@@ -1,2 +1,13 @@
-# movie-recommendation-app
-Developed a responsive Movie Recommendation Web Application using HTML, CSS, and JavaScript. The application integrates the OMDb API to fetch real-time movie data including title, poster, rating, year, and detailed information.
+# Movie Recommendation Website
+
+## Features
+- Movie Search using OMDb API
+- Favorites using LocalStorage
+- Movie Details Page
+- Responsive UI
+
+## Tech Stack
+HTML, CSS, JavaScript, OMDb API
+
+## How to Run
+Open index.html in browser
