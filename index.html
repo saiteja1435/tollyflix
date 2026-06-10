@@ -9,15 +9,36 @@
 <body>
 
     <header>
-        <h1>🎬 Movie Recommendation Website</h1>
+       <h1>🎬 TollyFlix</h1>
+       <p>Discover Telugu Movies, Ratings, Trailers & More</p>
+       <p><br></p>
         <div class="search-container">
             <input type="text" id="searchInput" placeholder="Search movies...">
             <button id="searchBtn">Search</button>
+<button id="favoritesBtn">
+❤️ Favorites
+</button>
         </div>
+        
+      <select id="genreFilter">
+    <option value="all">All Genres</option>
+    <option value="28">Action</option>
+    <option value="35">Comedy</option>
+    <option value="18">Drama</option>
+    <option value="10749">Romance</option>
+    <option value="53">Thriller</option>
+    <option value="27">Horror</option>
+    <option value="12">Adventure</option>
+    <option value="878">Sci-Fi</option>
+</select>
+<button id="trendingBtn">
+🔥trending
+</button>
     </header>
 
     <section>
         <h2>Movies</h2>
+        <div id="loader" class="loader"></div>
         <div id="moviesContainer" class="movie-grid"></div>
     </section>
 
@@ -35,3 +56,4 @@
 </div>
 </body>
 </html>
+
