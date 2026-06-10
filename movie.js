@@ -33,6 +33,11 @@ async function loadMovie() {
 
         </div>
     `;
+    document.getElementById("movieDetails").innerHTML += `
+    <button class="trailer-btn"onclick="window.open('https://www.youtube.com/results?search_query=${movie.Title}+official+trailer','_blank')">
+        ▶ Watch Trailer
+    </button>
+`;
 }
 
 loadMovie();
