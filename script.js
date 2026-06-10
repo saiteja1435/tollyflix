@@ -7,6 +7,7 @@ window.onload = () => {
     loadFavorites();
 };
 const teluguMovies = [
+    "29",
     "mirchi",
     "peddi",
     "rrr",
