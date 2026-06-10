@@ -1,183 +1,428 @@
-const API_KEY = "8fa66155";
+const API_KEY = "414fa9cd1d5abe3a521d0c8b4d8d9d2a";
 
+const loader = document.getElementById("loader");
 const moviesContainer = document.getElementById("moviesContainer");
-const favoritesContainer = document.getElementById("favoritesContainer");
-window.onload = () => {
-    searchMovies("Marvel");
-    loadFavorites();
-};
-const teluguMovies = [
-    "mirchi",
-    
-    "peddi",
-    "rrr",
-    "Pushpa:the rise",
-    "Salaar",
-    "Kalki 2898 AD",
-    "Baahubali",
-    "Baahubali 2",
-    "Devara",
-    "Hanuman",
-    "Tillu Square",
-    "DJ Tillu",
-    "Virupaksha",
-    "Lucky Baskhar",
-    "Eega",
-    "Magadheera",
-    "Pokiri",
-    "Athadu",
-    "Khaleja",
-    "Businessman",
-    "Race Gurram",
-    "Julayi",
-    "Ala Vaikunthapurramuloo",
-    "Sarrainodu",
-    "Srimanthudu",
-    "Maharshi",
-    "Fidaa",
-    "Love Story"
-];
 
-window.onload = async () => {
-    moviesContainer.innerHTML = "";
+let currentMovies = [];
 
-    for (const title of teluguMovies) {
-        try {
-            const response = await fetch(
-                `https://www.omdbapi.com/?t=${encodeURIComponent(title)}&apikey=${API_KEY}`
-            );
+// ============================
+// Load Telugu Movies
+// ============================
 
-            const movie = await response.json();
+async function loadMovies() {
 
-            if (movie.Response === "True") {
-                displayMovie(movie);
-            }
-        } catch (err) {
-            console.log(err);
-        }
-    }
+    loader.style.display = "block";
 
-    loadFavorites();
-};
-document.getElementById("searchBtn").addEventListener("click", () => {
-    const searchTerm = document.getElementById("searchInput").value.trim();
+    try {
 
-    if (searchTerm) {
-        searchMovies(searchTerm);
-    }
-});
+        const response = await fetch(
+            `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_original_language=te`
+        );
 
-async function searchMovies(movie) {
-    const url = `https://www.omdbapi.com/?s=${movie}&apikey=${API_KEY}`;
+        const data = await response.json();
 
-    const response = await fetch(url);
-    const data = await response.json();
+        currentMovies = data.results;
 
-    moviesContainer.innerHTML = "";
+        renderMovies(currentMovies);
 
-    if (data.Search) {
-        data.Search.forEach(async (movie) => {
-            const details = await fetchMovieDetails(movie.imdbID);
-            displayMovie(details);
-        });
-    } else {
-        moviesContainer.innerHTML = "<p>No movies found.</p>";
+    } catch (error) {
+
+        console.error("Error loading movies:", error);
+
+    } finally {
+
+        loader.style.display = "none";
+
     }
 }
 
-async function fetchMovieDetails(id) {
-    const response = await fetch(
-        `https://www.omdbapi.com/?i=${id}&apikey=${API_KEY}`
-    );
+// ============================
+// Load Trending Movies
+// ============================
 
-    return await response.json();
+async function loadTrendingMovies() {
+
+    loader.style.display = "block";
+
+    try {
+
+        const response = await fetch(
+            `https://api.themoviedb.org/3/trending/movie/day?api_key=${API_KEY}`
+        );
+
+        const data = await response.json();
+
+        currentMovies = data.results;
+
+        renderMovies(currentMovies);
+
+    } catch (error) {
+
+        console.error("Trending Error:", error);
+
+    } finally {
+
+        loader.style.display = "none";
+
+    }
 }
+
+// ============================
+// Render Movies
+// ============================
+
+function renderMovies(movies) {
+
+    moviesContainer.innerHTML = "";
+
+    if (!movies || movies.length === 0) {
+
+        moviesContainer.innerHTML =
+            "<h2>No Movies Found</h2>";
+
+        return;
+    }
+
+    movies.forEach(movie => {
+        displayMovie(movie);
+    });
+}
+
+// ============================
+// Display Movie Card
+// ============================
+
 function displayMovie(movie) {
 
+    const poster = movie.poster_path
+        ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+        : "https://via.placeholder.com/300x450?text=No+Image";
+
     const card = document.createElement("div");
+
     card.classList.add("movie-card");
 
     card.innerHTML = `
-        <img src="${movie.Poster}" alt="${movie.Title}">
-        <h3>${movie.Title}</h3>
-        <p>⭐ ${movie.imdbRating}</p>
-        <p>${movie.Year}</p>
-        <button class="favorite-btn">❤️ Favorite</button>
+        <img src="${poster}" alt="${movie.title}">
+        <h3>${movie.title}</h3>
+        <p>⭐ ${movie.vote_average.toFixed(1)}</p>
+
+        <button class="fav-btn">
+            ❤️ Favorite
+        </button>
     `;
 
-    // Poster click -> movie details page
-    card.querySelector("img").addEventListener("click", () => {
+    // Favorites
 
-        console.log("Clicked:", movie.imdbID);
+    card.querySelector(".fav-btn")
+    .addEventListener("click", (e) => {
 
-        window.location.href =
-            `movie.html?id=${movie.imdbID}`;
+        e.stopPropagation();
+
+        let favorites =
+            JSON.parse(
+                localStorage.getItem("favorites")
+            ) || [];
+
+        const exists =
+            favorites.find(
+                m => m.id === movie.id
+            );
+
+        if (!exists) {
+
+            favorites.push(movie);
+
+            localStorage.setItem(
+                "favorites",
+                JSON.stringify(favorites)
+            );
+
+            alert(
+                `${movie.title} added to Favorites ❤️`
+            );
+
+        } else {
+
+            alert(
+                "Already in Favorites ❤️"
+            );
+
+        }
+
     });
 
-    // Favorite button
-    card.querySelector(".favorite-btn").addEventListener("click", (e) => {
+    // Open Details Page
 
-        e.stopPropagation(); // card click trigger avvakunda
+    card.addEventListener("click", () => {
 
-        addToFavorites(movie);
+        window.location.href =
+            `movie.html?id=${movie.id}`;
+
     });
 
     moviesContainer.appendChild(card);
 }
 
-function addToFavorites(movie) {
-    let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+// ============================
+// Search Movies
+// ============================
 
-    if (!favorites.some(fav => fav.imdbID === movie.imdbID)) {
-        favorites.push(movie);
-        localStorage.setItem("favorites", JSON.stringify(favorites));
-        loadFavorites();
+async function searchMovies() {
+
+    const query =
+        document
+        .getElementById("searchInput")
+        .value
+        .trim();
+
+    if (!query) {
+
+        loadMovies();
+        return;
+
+    }
+
+    loader.style.display = "block";
+
+    try {
+
+        const response = await fetch(
+            `https://api.themoviedb.org/3/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}`
+        );
+
+        const data = await response.json();
+
+      const exactMovies = data.results.filter(movie =>
+    movie.title.toLowerCase() === query.toLowerCase()
+);
+
+if (exactMovies.length > 0) {
+    renderMovies(exactMovies);
+} else {
+    renderMovies(data.results);
+}
+    } catch (error) {
+
+        console.error("Search Error:", error);
+
+    } finally {
+
+        loader.style.display = "none";
+
     }
 }
 
-function loadFavorites() {
-    let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+// ============================
+// Genre Filter
+// ============================
 
-    favoritesContainer.innerHTML = "";
+async function fetchMoviesByGenre(genreId) {
 
-    favorites.forEach(movie => {
-        const card = document.createElement("div");
-        card.classList.add("movie-card");
+    loader.style.display = "block";
 
-        card.innerHTML = `
-            <img src="${movie.Poster}" alt="${movie.Title}">
-            <h3>${movie.Title}</h3>
-            <p>⭐ ${movie.imdbRating}</p>
-            <button onclick="removeFavorite('${movie.imdbID}')">
-                Remove
-            </button>
-        `;
+    try {
 
-        favoritesContainer.appendChild(card);
-    });
+        const response = await fetch(
+            `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_original_language=te&with_genres=${genreId}`
+        );
+
+        const data = await response.json();
+
+        currentMovies = data.results;
+
+        renderMovies(currentMovies);
+
+    } catch (error) {
+
+        console.error("Genre Error:", error);
+
+    } finally {
+
+        loader.style.display = "none";
+
+    }
 }
-card.querySelector("img").addEventListener("click", () => {
-    window.location.href = `movie.html?id=${movie.imdbID}`;
+
+// ============================
+// Show Favorites
+// ============================
+
+function showFavorites() {
+
+    const favorites =
+        JSON.parse(
+            localStorage.getItem("favorites")
+        ) || [];
+
+    renderMovies(favorites);
+}
+
+// ============================
+// Search Button
+// ============================
+
+document
+.getElementById("searchBtn")
+?.addEventListener(
+    "click",
+    searchMovies
+);
+
+// ============================
+// Enter Key Search
+// ============================
+
+document
+.getElementById("searchInput")
+?.addEventListener(
+    "keypress",
+    function (e) {
+
+        if (e.key === "Enter") {
+
+            searchMovies();
+
+        }
+
+    }
+);
+
+// ============================
+// Genre Dropdown
+// ============================
+
+document
+.getElementById("genreFilter")
+?.addEventListener(
+    "change",
+    function () {
+
+        const selected =
+            this.value;
+
+        if (selected === "all") {
+
+            loadMovies();
+
+        } else {
+
+            fetchMoviesByGenre(
+                selected
+            );
+
+        }
+
+    }
+);
+
+// ============================
+// Favorites Button
+// ============================
+
+document
+.getElementById("favoritesBtn")
+?.addEventListener(
+    "click",
+    showFavorites
+);
+
+// ============================
+// Trending Button
+// ============================
+
+document
+.getElementById("trendingBtn")
+?.addEventListener(
+    "click",
+    loadTrendingMovies
+);
+
+// ============================
+// Initial Load
+// ============================
+// Dark Mode
+
+const themeBtn =
+document.getElementById("themeBtn");
+
+themeBtn?.addEventListener("click", () => {
+
+    document.body.classList.toggle("dark");
+
+    localStorage.setItem(
+        "theme",
+        document.body.classList.contains("dark")
+            ? "dark"
+            : "light"
+    );
+
+    themeBtn.innerHTML =
+        document.body.classList.contains("dark")
+        ? "☀️ Light Mode"
+        : "🌙 Dark Mode";
 });
-function removeFavorite(id) {
-    let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
 
-    favorites = favorites.filter(movie => movie.imdbID !== id);
+async function loadCast(movieId){
 
-    localStorage.setItem("favorites", JSON.stringify(favorites));
+    const response = await fetch(
+        `https://api.themoviedb.org/3/movie/${movieId}/credits?api_key=${API_KEY}`
+    );
 
-    loadFavorites();
+    const data = await response.json();
+
+    let castHTML = "<h2>🎭 Cast</h2><div class='cast-container'>";
+
+    data.cast.slice(0,10).forEach(actor => {
+
+        const photo = actor.profile_path
+        ? `https://image.tmdb.org/t/p/w200${actor.profile_path}`
+        : "https://via.placeholder.com/200x300";
+
+        castHTML += `
+            <div class="cast-card">
+                <img src="${photo}">
+                <p>${actor.name}</p>
+                <small>${actor.character}</small>
+            </div>
+        `;
+    });
+
+    castHTML += "</div>";
+
+    document.getElementById("castContainer").innerHTML =
+    castHTML;
 }
+async function loadSimilarMovies(movieId){
 
-loadFavorites();
-document.getElementById("closeModal").onclick = () => {
-    document.getElementById("movieModal").style.display = "none";
-};
+    const response = await fetch(
+        `https://api.themoviedb.org/3/movie/${movieId}/similar?api_key=${API_KEY}`
+    );
 
-window.onclick = (event) => {
-    const modal = document.getElementById("movieModal");
+    const data = await response.json();
 
-    if(event.target === modal){
-        modal.style.display = "none";
-    }
-};
+    let html =
+    "<h2>🎬 Similar Movies</h2><div class='similar-container'>";
+
+    data.results.slice(0,8).forEach(movie=>{
+
+        const poster =
+        `https://image.tmdb.org/t/p/w300${movie.poster_path}`;
+
+        html += `
+            <div class="similar-card"
+            onclick="window.location.href='movie.html?id=${movie.id}'">
+
+                <img src="${poster}">
+                <p>${movie.title}</p>
+
+            </div>
+        `;
+    });
+
+    html += "</div>";
+
+    document.getElementById("similarMovies").innerHTML =
+    html;
+}
+loadMovies();
